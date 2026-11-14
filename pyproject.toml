@@ -1,0 +1,28 @@
+[project]
+name = "cf-recruitment"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "rusakpiotr", email = "rusakpiotr@proton.me"},
+]
+dependencies = ["pandas>=3.1.1"]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+]
+
+[tool.pdm.scripts]
+test = "pytest"
+pipeline = "python pipeline.py"
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+addopts = "-ra"

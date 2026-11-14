@@ -1,0 +1,18 @@
+line-length = 100
+
+# Provided by the task and must stay unchanged.
+extend-exclude = ["test_virtual_column.py", "test_virtual_column 1.py"]
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes (unused imports/variables, undefined names)
+    "I",   # isort (import order)
+    "B",   # flake8-bugbear (likely bugs)
+    "UP",  # pyupgrade (modern syntax)
+    "SIM", # flake8-simplify
+]
+
+[format]
+quote-style = "double"
