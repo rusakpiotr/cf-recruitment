@@ -48,10 +48,13 @@ the same package versions.
 - **Column names and text values are normalized** to lowercase, with surrounding whitespace removed
   and inner spaces replaced by `_` (`"Order ID"` → `order_id`, `" South"` → `south`,
   `"Office chair"` → `office_chair`). Regions in `revenue_by_region.csv` are therefore lowercase.
-- **The `TOTAL` row is not data.** It is a summary line of the export and is removed from the
-  data. Its numbers are used only as a checksum: the tests check that the cleaned quantities and
-  discounts add up to them (37150 and 65924.67) before duplicates are removed, so no other
-  cleaning step loses or changes a value. The export's total counts the duplicate lines too.
+- **The `TOTAL` row is a row to fix, not an order.** It is a summary line of the export, so it is
+  taken out of the order lines, and its old numbers are used as a checksum: the tests check that
+  the cleaned quantities and discounts add up to them (37150 and 65924.67) before duplicates are
+  removed, so no other cleaning step loses or changes a value. Instead of being dropped, the row
+  is fixed: it is recomputed from the cleaned data and written as the last row of
+  `revenue_by_region.csv`. The fixed row no longer counts the duplicates (37054 and 65793.77) and
+  also has the total revenue, which the export left empty. Anyone summing the file must skip it.
 - **A comma in a unit price is a decimal separator** (`"59,00"` = 59.00). All such prices have
   exactly two digits after the comma, so they cannot be thousands separators.
 - **A missing unit price is the product's price.** In the file every product has exactly one unit
@@ -84,7 +87,7 @@ removing duplicates.
 
 | Problem | Rows | How it is handled |
 |---|---:|---|
-| Summary row `TOTAL` at the end of the file | 1 | Removed |
+| Summary row `TOTAL` at the end of the file | 1 | Removed from the data; recomputed as the last row of `revenue_by_region.csv` (see assumptions) |
 | Header line repeated inside the file (line 753) | 1 | Removed |
 | Column name with trailing space (`"Quantity "`) | – | Column names stripped and normalized |
 | Region with surrounding whitespace (`" South"`, `"west  "`, …) | 8 | Stripped |
