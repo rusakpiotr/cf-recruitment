@@ -194,12 +194,25 @@ def test_totals_match_total_row_of_the_export(monkeypatch):
 def test_revenue_by_region(cleaned):
     result = pipeline.revenue_by_region(cleaned)
 
+    regions = result[result["region"] != "TOTAL"]
+
     assert result.columns.tolist() == ["region", "quantity", "discount", "revenue"]
-    assert result["region"].tolist() == ["central", "east", "north", "south", "west"]
-    assert result["revenue"].sum() == pytest.approx(cleaned["revenue"].sum())
+    assert regions["region"].tolist() == ["central", "east", "north", "south", "west"]
 
     expected = cleaned.groupby("region")["revenue"].sum()
-    assert result.set_index("region")["revenue"].to_dict() == pytest.approx(expected.to_dict())
+    assert regions.set_index("region")["revenue"].to_dict() == pytest.approx(expected.to_dict())
+
+
+def test_revenue_by_region_ends_with_fixed_total_row(cleaned):
+    """The TOTAL row is recomputed from the cleaned data: without duplicates, with revenue."""
+    result = pipeline.revenue_by_region(cleaned)
+    total = result.iloc[-1]
+
+    assert (result["region"] == "TOTAL").sum() == 1
+    assert total["region"] == "TOTAL"
+    assert total["quantity"] == cleaned["quantity"].sum() == 37054
+    assert total["discount"] == pytest.approx(cleaned["discount"].sum()) == 65793.77
+    assert total["revenue"] == pytest.approx(cleaned["revenue"].sum()) == 2570247.03
 
 
 def test_committed_output_is_up_to_date(cleaned):

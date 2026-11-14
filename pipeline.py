@@ -84,8 +84,19 @@ def add_virtual_revenue_column(df: pandas.DataFrame) -> pandas.DataFrame:
 
 
 def revenue_by_region(df: pandas.DataFrame) -> pandas.DataFrame:
-    """Sum quantity, discount and revenue of each region (one row per region)."""
-    return df.groupby("region", as_index=False)[["quantity", "discount", "revenue"]].sum()
+    """Sum quantity, discount and revenue of each region, with a ``TOTAL`` row at the end.
+
+    The ``TOTAL`` row replaces the one removed from ``sales.csv``: it is recomputed from the
+    cleaned data, so it no longer counts duplicates and it also has the total revenue.
+    Money sums are rounded to cents to hide floating-point noise.
+    """
+    columns = ["quantity", "discount", "revenue"]
+    by_region = df.groupby("region", as_index=False)[columns].sum()
+    # Sum column by column, so that quantity stays an integer.
+    total = pandas.DataFrame([{"region": "TOTAL"} | {c: by_region[c].sum() for c in columns}])
+    by_region = pandas.concat([by_region, total], ignore_index=True)
+    by_region[["discount", "revenue"]] = by_region[["discount", "revenue"]].round(2)
+    return by_region
 
 
 # --- pipeline ----------------------------------------------------------------
